@@ -4,6 +4,7 @@ const connectDB = require("./config/db");
 const cors = require("cors");
 const errorHandler = require("./middleware/errorHandler");
 const rateLimit = require("express-rate-limit");
+const serverless = require("serverless-http");
 
 dotenv.config();
 
@@ -11,8 +12,8 @@ const app = express();
 
 // Connect DB
 connectDB()
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => console.log("❌ DB Error:", err));
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => console.log("DB Error:", err));
 
 // Middlewares
 app.use(cors());
@@ -64,4 +65,5 @@ app.use((req, res) => {
 // Error handler
 app.use(errorHandler);
 
-module.exports = app;
+// Export for Vercel
+module.exports = serverless(app);
