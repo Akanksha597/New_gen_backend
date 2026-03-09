@@ -54,6 +54,16 @@ app.use((req, res) => {
 });
 
 // Error handler
+// Error handler
 app.use(errorHandler);
 
+// Start server locally
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+// Export for Vercel
 module.exports = app;
