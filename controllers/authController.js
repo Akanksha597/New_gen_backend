@@ -7,12 +7,15 @@ const createToken = (id) =>
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
-exports.signup = async (req, res, next) => {
+exports.signup = async (req, res) => {
   try {
-    const { name, email, password, confirmPassword, mobileNumber } = req.body;
+    const { name, email, password, confirmPassword, mobileNumber, role } = req.body;
 
     if (!name || !email || !password || !confirmPassword || !mobileNumber) {
-      return res.status(400).json({ message: "All fields are required" });
+      return res.status(400).json({
+        status: "fail",
+        message: "All fields are required"
+      });
     }
 
     const newUser = await User.create({
@@ -21,6 +24,7 @@ exports.signup = async (req, res, next) => {
       password,
       confirmPassword,
       mobileNumber,
+      role
     });
 
     const token = createToken(newUser._id);
@@ -28,19 +32,15 @@ exports.signup = async (req, res, next) => {
     res.status(201).json({
       status: "success",
       token,
-      user: {
-        id: newUser._id,
-        name: newUser.name,
-        email: newUser.email,
-        mobileNumber: newUser.mobileNumber,
-      },
+      user: newUser
     });
+
   } catch (err) {
     console.error(err);
-    res.status(400).json({
+
+    res.status(500).json({
       status: "fail",
-      message: err.message || "Signup failed",
-      errors: err.errors,
+      message: err.message
     });
   }
 };
