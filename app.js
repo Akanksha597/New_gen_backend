@@ -13,14 +13,15 @@ const app = express();
 // MongoDB connection flag
 let isConnected = false;
 
-// Middleware
+// Middlewares
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Rate limiter
+// Trust proxy (Vercel required)
 app.set("trust proxy", 1);
 
+// Rate limiter
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -28,22 +29,22 @@ const limiter = rateLimit({
 
 app.use(limiter);
 
-// ✅ MongoDB reconnect middleware
+// ✅ MongoDB auto connect middleware
 app.use(async (req, res, next) => {
-  if (!isConnected) {
-    try {
+  try {
+    if (!isConnected) {
       await connectDB();
       isConnected = true;
       console.log("✅ MongoDB connected");
-    } catch (err) {
-      console.error("❌ DB Connection Error:", err.message);
-      return res.status(500).json({
-        status: "fail",
-        message: "Database connection failed",
-      });
     }
+    next();
+  } catch (err) {
+    console.error("❌ DB Connection Error:", err.message);
+    return res.status(500).json({
+      status: "fail",
+      message: "Database connection failed",
+    });
   }
-  next();
 });
 
 // Routes
@@ -64,14 +65,20 @@ app.use("/api/testimonials", testimonialRoutes);
 app.use("/api/v1/jobs", jobRoutes);
 app.use("/api/v1/courses", courseRoutes);
 app.use("/api/v1/batch", batchRoutes);
-app.use("/api/v1/Registration", RegistrationRoutes);
+app.use("/api/v1/registration", RegistrationRoutes);
 app.use("/api/v1/payment", paymentRoutes);
 
-// 404 Handler
+// Test route
+app.get("/", (req, res) => {
+  res.send("API Running Successfully 🚀");
+});
+
+// 404 handler
 app.use((req, res, next) => {
-  const error = new Error(`Not Found - ${req.originalUrl}`);
-  res.status(404);
-  next(error);
+  res.status(404).json({
+    status: "fail",
+    message: "Route not found",
+  });
 });
 
 // Global error handler

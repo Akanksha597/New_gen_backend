@@ -45,24 +45,33 @@ exports.signup = async (req, res, next) => {
   }
 };
 
-exports.login = async (req, res, next) => {
-  
+exports.login = async (req, res) => {
   try {
-     
     const { email, password } = req.body;
- 
-    if (!email || !password)
-      return res.status(400).json({ message: "Please provide email and password." });
+
+    if (!email || !password) {
+      return res.status(400).json({
+        status: "fail",
+        message: "Please provide email and password."
+      });
+    }
 
     const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
-      return res.status(401).json({ message: "Email is incorrect." });
+      return res.status(401).json({
+        status: "fail",
+        message: "Email is incorrect."
+      });
     }
 
     const isPasswordCorrect = await user.correctPassword(password, user.password);
+
     if (!isPasswordCorrect) {
-      return res.status(401).json({ message: "Password is incorrect." });
+      return res.status(401).json({
+        status: "fail",
+        message: "Password is incorrect."
+      });
     }
 
     const token = createToken(user._id);
@@ -70,13 +79,17 @@ exports.login = async (req, res, next) => {
     res.status(200).json({
       status: "success",
       message: "Login successful",
-      token,
+      token
     });
+
   } catch (err) {
-    next(err);
+    console.error(err);
+    res.status(500).json({
+      status: "fail",
+      message: err.message
+    });
   }
 };
-
 
 exports.logout = async (req, res) => {
   res.status(200).json({
