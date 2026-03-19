@@ -35,10 +35,10 @@ const courseBatchSchema = new mongoose.Schema({
     default: false,
   },
   category: {
-    type: String,
-    enum: ['Development', 'Database', 'Cloud', 'SAP'],
-    required: true,
-  },
+  type: String,
+  enum: ['Development', 'Database', 'Cloud', 'SAP', 'Testing'],
+  required: true,
+},
   fee: {
     type: Number,
     required: true,
